@@ -26,6 +26,9 @@ if(!defined("IN_MYBB"))
 // set the priority to -1000000 to make sure it is always the first plugin run - we'll be editing the core permission arrays; if it's loaded right at the start, all core code and plugins will use the custom permissions
 $plugins->add_hook("global_start", "globalmoderators_load", -1000000);
 $plugins->add_hook("forumdisplay_end", "globalmoderators_modlist");
+$plugins->add_hook("admin_user_menu", "globalmoderators_admin_user_menu");
+$plugins->add_hook("admin_user_action_handler", "globalmoderators_admin_user_action_handler");
+$plugins->add_hook("admin_user_permissions", "globalmoderators_admin_user_permissions");
 
 function globalmoderators_info()
 {
@@ -135,7 +138,7 @@ function globalmoderators_modlist()
 	// we don't want to show global moderators in the 'moderated by' list
 	// the same as super moderators don't show up in this list
 	// the only actual difference is the in_array check with $global_moderators
-	
+
 	global $lang, $templates, $moderatorcache, $parentlist, $moderatedby, $global_moderators;
 
 	$done_moderators = array(
@@ -202,4 +205,36 @@ function globalmoderators_modlist()
 	{
 		$moderatedby = '';
 	}
+}
+
+function globalmoderators_admin_user_menu($sub_menu)
+{
+	global $lang;
+
+	$lang->load("user_globalmoderators");
+
+	$sub_menu[] = array("id" => "globalmoderators", "title" => $lang->globalmoderators, "link" => "index.php?module=user-globalmoderators");
+
+	return $sub_menu;
+}
+
+function globalmoderators_admin_user_action_handler($actions)
+{
+	$actions['globalmoderators'] = array(
+		"active" => "globalmoderators",
+		"file" => "globalmoderators.php"
+	);
+
+	return $actions;
+}
+
+function globalmoderators_admin_user_permissions($admin_permissions)
+{
+	global $lang;
+
+	$lang->load("user_globalmoderators");
+
+	$admin_permissions['globalmoderators'] = $lang->can_manage_globalmoderators;
+
+	return $admin_permissions;
 }
