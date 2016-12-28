@@ -158,7 +158,7 @@ function globalmoderators_modlist()
 				{
 					if($moderator['isgroup'])
 					{
-						if(in_array($moderator['id'], $done_moderators['groups']) || in_array($moderator['id'], $global_moderators['usergroups']))
+						if(in_array($moderator['id'], $done_moderators['groups']) || (in_array($moderator['id'], $global_moderators['usergroups']) && !$moderator['mid']))
 						{
 							continue;
 						}
@@ -170,7 +170,7 @@ function globalmoderators_modlist()
 					}
 					else
 					{
-						if(in_array($moderator['id'], $done_moderators['users']) || in_array($moderator['id'], $global_moderators['users']))
+						if(in_array($moderator['id'], $done_moderators['users']) || (in_array($moderator['id'], $global_moderators['users']) && !$moderator['mid']))
 						{
 							continue;
 						}
