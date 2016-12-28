@@ -24,8 +24,8 @@ if(!defined("IN_MYBB"))
 }
 
 // set the priority to -1000000 to make sure it is always the first plugin run - we'll be editing the core permission arrays; if it's loaded right at the start, all core code and plugins will use the custom permissions
-//$plugins->add_hook("global_start", "globalmoderators_load", -1000000);
-//$plugins->add_hook("forumdisplay_end", "globalmoderators_modlist");
+$plugins->add_hook("global_start", "globalmoderators_load", -1000000);
+$plugins->add_hook("forumdisplay_end", "globalmoderators_modlist");
 
 function globalmoderators_info()
 {
@@ -60,7 +60,7 @@ function globalmoderators_load()
 
 	global $db, $cache, $global_moderators;
 
-	$original_moderators = $cache->read('moderators');
+	$cache->read('moderators');
 
 	$global_moderators = array('users' => array(), 'usergroups' => array());
 	$global_moderators_data = array(
@@ -71,60 +71,71 @@ function globalmoderators_load()
 			)*/
 		),
 		'usergroups' => array(
-			2 => array(
+			/*2 => array(
 				'canopenclosethreads' => 1,
 				'canstickunstickthreads' => 1,
-			)
+			)*/
 		)
 	);
 
-	foreach($global_moderators_data['users'] as $id => $perms)
+	$forums = $cache->read('forums');
+	foreach($forums as $fid => $forum)
 	{
-		$data = array(
-			'mid' => 0,
-			'fid' => 1,
-			'id' => $id,
-			'isgroup' => 0,
-			'title' => 'faked - test',
-		);
-		foreach($perms as $key => $val)
+		if($forum['type'] != 'c')
 		{
-			$data[$key] = $val;
+			continue;
 		}
-		$cache->cache['moderators'][1]['users'][$id] = $data;
 
-		$global_moderators['users'][$id] = $id;
+		foreach($global_moderators_data['users'] as $id => $perms)
+		{
+			$data = array(
+				'mid' => 0,
+				'fid' => $fid,
+				'id' => $id,
+				'isgroup' => 0,
+				'title' => 'faked - test',
+			);
+			foreach($perms as $key => $val)
+			{
+				$data[$key] = $val;
+			}
+			$cache->cache['moderators'][$fid]['users'][$id] = $data;
+
+			$global_moderators['users'][$id] = $id;
+		}
+
+		foreach($global_moderators_data['usergroups'] as $id => $perms)
+		{
+			$data = array(
+				'mid' => 0,
+				'fid' => $fid,
+				'id' => $id,
+				'isgroup' => 1,
+				'title' => 'faked - registered',
+			);
+			foreach($perms as $key => $val)
+			{
+				$data[$key] = $val;
+			}
+			$cache->cache['moderators'][$fid]['usergroups'][$id] = $data;
+
+			$global_moderators['usergroups'][$id] = $id;
+			$query = $db->simple_select('users', 'uid', 'usergroup = '.intval($id));
+			while($uid = $db->fetch_field($query, 'uid'))
+			{
+				$global_moderators['users'][$uid] = $uid;
+			}
+		}
 	}
-
-	foreach($global_moderators_data['usergroups'] as $id => $perms)
-	{
-		$data = array(
-			'mid' => 0,
-			'fid' => 1,
-			'id' => $id,
-			'isgroup' => 1,
-			'title' => 'faked - registered',
-		);
-		foreach($perms as $key => $val)
-		{
-			$data[$key] = $val;
-		}
-		$cache->cache['moderators'][1]['usergroups'][$id] = $data;
-
-		$global_moderators['usergroups'][$id] = $id;
-		$query = $db->simple_select('users', 'uid', 'usergroup = '.intval($id));
-		while($uid = $db->fetch_field($query, 'uid'))
-		{
-			$global_moderators['users'][$uid] = $uid;
-		}
-	}
-
-	//print_r($original_moderators);
-	//print_r($cache->cache['moderators']);
 }
 
 function globalmoderators_modlist()
 {
+	// this is copied from forumdisplay.php
+	// we don't want to show global moderators in the 'moderated by' list
+	// the same as super moderators don't show up in this list
+	// the only actual difference is the in_array check with $global_moderators
+	
 	global $lang, $templates, $moderatorcache, $parentlist, $moderatedby, $global_moderators;
 
 	$done_moderators = array(
@@ -147,7 +158,7 @@ function globalmoderators_modlist()
 				{
 					if($moderator['isgroup'])
 					{
-						if(in_array($moderator['id'], $done_moderators['groups']) || (in_array($moderator['id'], $global_moderators['usergroups']) && !$moderator['mid']))
+						if(in_array($moderator['id'], $done_moderators['groups']) || in_array($moderator['id'], $global_moderators['usergroups']))
 						{
 							continue;
 						}
@@ -159,7 +170,7 @@ function globalmoderators_modlist()
 					}
 					else
 					{
-						if(in_array($moderator['id'], $done_moderators['users']) || (in_array($moderator['id'], $global_moderators['users']) && !$moderator['mid']))
+						if(in_array($moderator['id'], $done_moderators['users']) || in_array($moderator['id'], $global_moderators['users']))
 						{
 							continue;
 						}
