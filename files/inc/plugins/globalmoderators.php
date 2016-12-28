@@ -93,7 +93,7 @@ function globalmoderators_load()
 				'fid' => $fid,
 				'id' => $id,
 				'isgroup' => 0,
-				'title' => 'faked - test',
+				'title' => '',
 			);
 			foreach($perms as $key => $val)
 			{
@@ -111,7 +111,7 @@ function globalmoderators_load()
 				'fid' => $fid,
 				'id' => $id,
 				'isgroup' => 1,
-				'title' => 'faked - registered',
+				'title' => '',
 			);
 			foreach($perms as $key => $val)
 			{
