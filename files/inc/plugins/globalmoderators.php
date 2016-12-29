@@ -135,42 +135,46 @@ function globalmoderators_load()
 		return;
 	}
 
-	global $db, $cache, $global_moderators;
+	global $mybb, $db, $cache, $global_moderators;
+
+	$fid = $category_id = null;
+	if($mybb->input['fid'])
+	{
+		$fid = $mybb->input['fid'];
+	}
+	elseif($mybb->input['tid'])
+	{
+		$thread = get_thread($mybb->input['tid']);
+		$fid = $thread['fid'];
+	}
+	$forum_info = get_forum($fid);
+	if($forum_info)
+	{
+		$parentlist = explode(',', $forum_info['parentlist'], 2);
+		$category_id = $parentlist[0];
+	}
 
 	$cache->read('moderators');
 
 	$global_moderators = array('users' => array(), 'usergroups' => array());
-	$global_moderators_data = array(
-		'users' => array(
-			/*2 => array(
-				'canopenclosethreads' => 1,
-				'canstickunstickthreads' => 1,
-			)*/
-		),
-		'usergroups' => array(
-			/*2 => array(
-				'canopenclosethreads' => 1,
-				'canstickunstickthreads' => 1,
-			)*/
-		)
-	);
+	$global_moderators_data = $cache->read('globalmoderators');
 
 	$forums = $cache->read('forums');
 	foreach($forums as $fid => $forum)
 	{
-		if($forum['type'] != 'c')
+		if(!($forum['type'] == 'c' && ($forum['fid'] == $category_id || !$category_id)))
 		{
 			continue;
 		}
 
-		foreach($global_moderators_data['users'] as $id => $perms)
+		foreach($global_moderators_data['user'] as $id => $perms)
 		{
 			$data = array(
 				'mid' => 0,
 				'fid' => $fid,
 				'id' => $id,
 				'isgroup' => 0,
-				'title' => '',
+				'username' => '',
 			);
 			foreach($perms as $key => $val)
 			{
@@ -181,7 +185,7 @@ function globalmoderators_load()
 			$global_moderators['users'][$id] = $id;
 		}
 
-		foreach($global_moderators_data['usergroups'] as $id => $perms)
+		foreach($global_moderators_data['usergroup'] as $id => $perms)
 		{
 			$data = array(
 				'mid' => 0,
