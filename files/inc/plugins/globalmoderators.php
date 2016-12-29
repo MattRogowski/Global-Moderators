@@ -44,9 +44,83 @@ function globalmoderators_info()
 	);
 }
 
+function globalmoderators_install()
+{
+	global $db, $globalmoderators_uninstall_confirm_override;
+
+	// this is so we override the confirmation when trying to uninstall, so we can just run the uninstall code
+	$globalmoderators_uninstall_confirm_override = true;
+	globalmoderators_uninstall();
+
+	if(!$db->table_exists("globalmoderators"))
+	{
+		$db->write_query("
+			CREATE TABLE `".TABLE_PREFIX."globalmoderators` (
+				`gmid` smallint(5) NOT NULL AUTO_INCREMENT,
+				`type` enum('user','usergroup') DEFAULT NULL,
+				`id` int(10) NOT NULL,
+				`perms` text NOT NULL,
+				`active` int(1) NOT NULL DEFAULT '0',
+				PRIMARY KEY (`gmid`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+		");
+	}
+
+	change_admin_permission("user", "globalmoderators", 1);
+}
+
+function globalmoderators_is_installed()
+{
+	global $db;
+
+	return $db->table_exists("globalmoderators");
+}
+
+function globalmoderators_uninstall()
+{
+	global $mybb, $db, $cache, $globalmoderators_uninstall_confirm_override;
+
+	// this is a check to make sure we want to uninstall
+	// if 'No' was chosen on the confirmation screen, redirect back to the plugins page
+	if($mybb->input['no'])
+	{
+		admin_redirect("index.php?module=config-plugins");
+	}
+	else
+	{
+		// there's a post request so we submitted the form and selected yes
+		// or the confirmation is being overridden by the installation function; this is for when globalmoderators_uninstall() is called at the start of globalmoderators_install(), we just want to execute the uninstall code at this point
+		if($mybb->request_method == "post" || $globalmoderators_uninstall_confirm_override === true || $mybb->input['action'] == "delete")
+		{
+			if($db->table_exists("globalmoderators"))
+			{
+				$db->drop_table("globalmoderators");
+			}
+
+			$cache->delete('globalmoderators');
+		}
+		// need to show the confirmation
+		else
+		{
+			global $lang, $page;
+
+			$lang->load("user_globalmoderators");
+
+			$query = $db->simple_select("globalmoderators", "COUNT(*) AS globalmoderators");
+			$globalmoderators = $db->fetch_field($query, "globalmoderators");
+			if($globalmoderators > 0)
+			{
+				$lang->globalmoderators_uninstall_warning .= " " . $lang->sprintf($lang->globalmoderators_uninstall_warning_count, $globalmoderators);
+			}
+
+			$page->output_confirm_action("index.php?module=config-plugins&action=deactivate&uninstall=1&plugin=globalmoderators&my_post_key={$mybb->post_code}", $lang->globalmoderators_uninstall_warning);
+		}
+	}
+}
+
 function globalmoderators_activate()
 {
-
+	globalmoderators_cache();
 }
 
 function globalmoderators_deactivate()
@@ -237,4 +311,19 @@ function globalmoderators_admin_user_permissions($admin_permissions)
 	$admin_permissions['globalmoderators'] = $lang->can_manage_globalmoderators;
 
 	return $admin_permissions;
+}
+
+function globalmoderators_cache()
+{
+	global $db, $cache;
+
+	$globalmoderators = array('user' => array(), 'usergroup' => array());
+
+	$query = $db->simple_select('globalmoderators', '*', 'active = 1');
+	while($globalmoderator = $db->fetch_array($query))
+	{
+		$globalmoderators[$globalmoderator['type']][$globalmoderator['id']] = unserialize($globalmoderator['perms']);
+	}
+
+	$cache->update('globalmoderators', $globalmoderators);
 }
