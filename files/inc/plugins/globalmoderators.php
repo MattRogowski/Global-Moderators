@@ -169,6 +169,11 @@ function globalmoderators_load()
 
 		foreach($global_moderators_data['user'] as $id => $perms)
 		{
+			if(!$perms)
+			{
+				continue;
+			}
+
 			$data = array(
 				'mid' => 0,
 				'fid' => $fid,
@@ -187,6 +192,11 @@ function globalmoderators_load()
 
 		foreach($global_moderators_data['usergroup'] as $id => $perms)
 		{
+			if(!$perms)
+			{
+				continue;
+			}
+
 			$data = array(
 				'mid' => 0,
 				'fid' => $fid,
