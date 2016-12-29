@@ -25,7 +25,7 @@ if(!defined("IN_MYBB"))
 
 // set the priority to -1000000 to make sure it is always the first plugin run - we'll be editing the core permission arrays; if it's loaded right at the start, all core code and plugins will use the custom permissions
 $plugins->add_hook("global_start", "globalmoderators_load", -1000000);
-$plugins->add_hook("forumdisplay_end", "globalmoderators_modlist");
+$plugins->add_hook("forumdisplay_end", "globalmoderators_modlists");
 $plugins->add_hook("admin_user_menu", "globalmoderators_admin_user_menu");
 $plugins->add_hook("admin_user_action_handler", "globalmoderators_admin_user_action_handler");
 $plugins->add_hook("admin_user_permissions", "globalmoderators_admin_user_permissions");
@@ -135,26 +135,11 @@ function globalmoderators_load()
 		return;
 	}
 
-	global $mybb, $db, $cache, $global_moderators;
-
-	$fid = $category_id = null;
-	if($mybb->input['fid'])
-	{
-		$fid = $mybb->input['fid'];
-	}
-	elseif($mybb->input['tid'])
-	{
-		$thread = get_thread($mybb->input['tid']);
-		$fid = $thread['fid'];
-	}
-	$forum_info = get_forum($fid);
-	if($forum_info)
-	{
-		$parentlist = explode(',', $forum_info['parentlist'], 2);
-		$category_id = $parentlist[0];
-	}
+	global $mybb, $db, $cache, $global_moderators, $original_moderators;
 
 	$cache->read('moderators');
+
+	$original_moderators = $cache->cache['moderators'];
 
 	$global_moderators = array('users' => array(), 'usergroups' => array());
 	$global_moderators_data = $cache->read('globalmoderators');
@@ -162,7 +147,7 @@ function globalmoderators_load()
 	$forums = $cache->read('forums');
 	foreach($forums as $fid => $forum)
 	{
-		if(!($forum['type'] == 'c' && ($forum['fid'] == $category_id || !$category_id)))
+		if($forum['type'] == 'c')
 		{
 			continue;
 		}
@@ -220,14 +205,29 @@ function globalmoderators_load()
 	}
 }
 
-function globalmoderators_modlist()
+function globalmoderators_modlists()
 {
-	// this is copied from forumdisplay.php
-	// we don't want to show global moderators in the 'moderated by' list
-	// the same as super moderators don't show up in this list
-	// the only actual difference is the in_array check with $global_moderators
+	global $lang, $templates, $theme, $fid, $subforums, $moderatorcache, $parentlist, $moderatedby, $global_moderators, $original_moderators;
 
-	global $lang, $templates, $moderatorcache, $parentlist, $moderatedby, $global_moderators;
+	$moderatorcache = $original_moderators;
+
+	// this is also copied from forumdisplay.php
+	// we don't want to show global moderators in the 'moderated by' text in the list of subforums
+	// however, because of the limitation of existing hooks, the list can't be overwritten
+	// so, we have to reset the moderators cache to what it was originally
+	// then re-generate the subforums
+
+	$subforums = '';
+	$child_forums = build_forumbits($fid, 2);
+	$forums = $child_forums['forum_list'];
+	if($forums)
+	{
+		$lang->sub_forums_in = $lang->sprintf($lang->sub_forums_in, $foruminfo['name']);
+		eval("\$subforums = \"".$templates->get("forumdisplay_subforums")."\";");
+	}
+
+	// this is also copied from forumdisplay.php
+	// this rebuilds the 'moderated by' text for the current forum
 
 	$done_moderators = array(
 		"users" => array(),
@@ -249,7 +249,7 @@ function globalmoderators_modlist()
 				{
 					if($moderator['isgroup'])
 					{
-						if(in_array($moderator['id'], $done_moderators['groups']) || (in_array($moderator['id'], $global_moderators['usergroups']) && !$moderator['mid']))
+						if(in_array($moderator['id'], $done_moderators['groups']))
 						{
 							continue;
 						}
@@ -261,7 +261,7 @@ function globalmoderators_modlist()
 					}
 					else
 					{
-						if(in_array($moderator['id'], $done_moderators['users']) || (in_array($moderator['id'], $global_moderators['users']) && !$moderator['mid']))
+						if(in_array($moderator['id'], $done_moderators['users']))
 						{
 							continue;
 						}
