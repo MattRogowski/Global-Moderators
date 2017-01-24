@@ -632,7 +632,7 @@ function generate_permissions($permissions, $user_perms)
 				$description = $info['lang'] . "_desc";
 				$info['description'] = "<br /><small class=\"input\">" . $lang->$description . "</small> ";
 			}
-			$form_container->output_cell($lang->$info['lang'] . $info['description']);
+			$form_container->output_cell($lang->{$info['lang']} . $info['description']);
 			if($info['type'] == "yesno")
 			{
 				$form_container->output_cell($form->generate_radio_button("perms[{$perm}]", 1, $lang->yes, array("checked" => check_radio_button($user_perms, $perm, 1))), array("class" => "align_center"));
