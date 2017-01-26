@@ -130,12 +130,17 @@ function globalmoderators_deactivate()
 
 function globalmoderators_load()
 {
-	if(!preg_match('/^(forumdisplay|showthread|moderation)\.php$/', THIS_SCRIPT))
+	if(!preg_match('/^(forumdisplay|showthread|modcp|moderation)\.php$/', THIS_SCRIPT))
 	{
 		return;
 	}
 
 	global $mybb, $db, $cache, $global_moderators, $original_moderators;
+
+	if(THIS_SCRIPT == 'modcp.php')
+	{
+		$mybb->usergroup['issupermod'] = 1;
+	}
 
 	$cache->read('moderators');
 
