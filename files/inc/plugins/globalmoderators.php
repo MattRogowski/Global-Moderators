@@ -202,6 +202,10 @@ function globalmoderators_load()
 			{
 				$data[$key] = $val;
 			}
+			if(!array_key_exists($fid, $cache->cache['moderators']) || empty($cache->cache['moderators'][$fid]))
+			{
+				$cache->cache['moderators'][$fid] = array('users' => array(), 'usergroups' => array());
+			}
 			$cache->cache['moderators'][$fid]['usergroups'][$id] = $data;
 
 			$global_moderators['usergroups'][$id] = $id;
