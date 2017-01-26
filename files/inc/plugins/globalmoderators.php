@@ -137,11 +137,6 @@ function globalmoderators_load()
 
 	global $mybb, $db, $cache, $global_moderators, $original_moderators;
 
-	if(THIS_SCRIPT == 'modcp.php')
-	{
-		$mybb->usergroup['issupermod'] = 1;
-	}
-
 	$cache->read('moderators');
 
 	$original_moderators = $cache->cache['moderators'];
@@ -181,6 +176,11 @@ function globalmoderators_load()
 			}
 			$cache->cache['moderators'][$fid]['users'][$id] = $data;
 
+			if(THIS_SCRIPT == 'modcp.php' && $mybb->user['uid'] == $id)
+			{
+			    $mybb->usergroup['issupermod'] = 1;
+			}
+
 			$global_moderators['users'][$id] = $id;
 		}
 
@@ -207,6 +207,11 @@ function globalmoderators_load()
 				$cache->cache['moderators'][$fid] = array('users' => array(), 'usergroups' => array());
 			}
 			$cache->cache['moderators'][$fid]['usergroups'][$id] = $data;
+
+			if(THIS_SCRIPT == 'modcp.php' && $mybb->user['usergroup'] == $id)
+			{
+			    $mybb->usergroup['issupermod'] = 1;
+			}
 
 			$global_moderators['usergroups'][$id] = $id;
 			$query = $db->simple_select('users', 'uid', 'usergroup = '.intval($id));
