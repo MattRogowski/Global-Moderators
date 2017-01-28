@@ -178,7 +178,9 @@ function globalmoderators_load()
 
 			if(THIS_SCRIPT == 'modcp.php' && $mybb->user['uid'] == $id)
 			{
-			    $mybb->usergroup['issupermod'] = 1;
+			    $mybb->usergroup['canmanageannounce'] = 1;
+			    $mybb->usergroup['canmanagereportedcontent'] = 1;
+			    $mybb->usergroup['canviewmodlogs'] = 1;
 			}
 
 			$global_moderators['users'][$id] = $id;
@@ -210,7 +212,9 @@ function globalmoderators_load()
 
 			if(THIS_SCRIPT == 'modcp.php' && $mybb->user['usergroup'] == $id)
 			{
-			    $mybb->usergroup['issupermod'] = 1;
+			    $mybb->usergroup['canmanageannounce'] = 1;
+			    $mybb->usergroup['canmanagereportedcontent'] = 1;
+			    $mybb->usergroup['canviewmodlogs'] = 1;
 			}
 
 			$global_moderators['usergroups'][$id] = $id;

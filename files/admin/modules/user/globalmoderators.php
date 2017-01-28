@@ -208,17 +208,17 @@ elseif($mybb->input['action'] == "edit")
 				"type" => "yesno"
 			),
 		),
-		"moderator_cp_permissions" => array(
+		"globalmoderators_moderator_cp_permissions" => array(
 			"canmanageannouncements" => array(
-				"lang" => "can_manage_announcements",
+				"lang" => "globalmoderators_can_manage_announcements",
 				"type" => "yesno"
 			),
 			"canmanagereportedposts" => array(
-				"lang" => "can_manage_reported_posts",
+				"lang" => "globalmoderators_can_manage_reported_posts",
 				"type" => "yesno"
 			),
 			"canviewmodlog" => array(
-				"lang" => "can_view_mod_log",
+				"lang" => "globalmoderators_can_view_mod_log",
 				"type" => "yesno"
 			),
 		)

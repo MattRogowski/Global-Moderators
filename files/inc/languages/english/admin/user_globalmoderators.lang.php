@@ -46,6 +46,11 @@ $l['globalmoderators_updated'] = "Global moderator permissions updated.";
 $l['globalmoderators_perms_activated'] = "Global moderator permissions activated.";
 $l['globalmoderators_perms_deactivated'] = "Global moderator permissions deactivated.";
 
+$l['globalmoderators_moderator_cp_permissions'] = "Moderator CP Permissions (Note: while general moderator permissions can still be set on a per-forum basis to override Global Moderator permissions, changing the below permissions on a per-forum basis may result in inconsistent behaviour due to limitations of MyBB)";
+$l['globalmoderators_can_manage_announcements'] = "Can manage announcements?";
+$l['globalmoderators_can_manage_reported_posts'] = "Can manage reported posts?";
+$l['globalmoderators_can_view_mod_log'] = "Can view moderator log entries?";
+
 $l['permission'] = "Permission";
 $l['inherit'] = "Inherit";
 $l['inherit_all'] = "Inherit (all)";
