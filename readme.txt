@@ -3,7 +3,7 @@ Description: Apply moderator permissions globally to all forums
 Website: https://github.com/MattRogowski/Global-Moderators
 Author: Matt Rogowski
 Authorsite: https://matt.rogow.ski
-Version: 0.0.1
+Version: 1.0.0
 Compatibility: 1.8.x
 Files: 3
 Database changes: 1 new table
@@ -22,8 +22,9 @@ This differs from super moderators, who have full moderator permissions in all f
 
 Change Log:
 29/12/16 - v0.0.1 -> Initial beta release.
+28/01/17 - v0.0.1 -> v1.0.0 -> Fixed a bug with text not appearing when using PHP 7. Fixed a bug with some permissions not being applied correctly. To upgrade, reupload ./inc/plugins/globalmoderators.php, ./admin/modules/user/globalmoderators.php and ./inc/languages/english/admin/user_globalmoderators.lang.php.
 
-Copyright 2016 Matthew Rogowski
+Copyright 2017 Matthew Rogowski
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
